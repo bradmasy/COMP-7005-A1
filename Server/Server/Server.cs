@@ -1,13 +1,12 @@
 using System.Net.Sockets;
 using System.Text;
+using static Server.Constants.Constants;
 
 namespace Server.Server;
 
 public class Server(string path)
 {
-    private const int Word = 0;
-    private const int Shift = 1;
-    private static readonly byte[] Buffer = new byte[1024];
+    private static readonly byte[] Buffer = new byte[ByteArraySize];
 
     public Socket Socket { get; set; } = new(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
 
@@ -21,18 +20,18 @@ public class Server(string path)
         var endPoint = new UnixDomainSocketEndPoint(path);
 
         Socket.Bind(endPoint);
-        Socket.Listen(100);
-
+        Socket.Listen(Connections);
 
         await Run();
     }
 
     private async Task Run()
     {
+        Console.WriteLine("Starting server...");
         while (true)
         {
             var clientSocket = await Socket.AcceptAsync();
-            
+
             var numberOfBytesReceived = clientSocket.Receive(Buffer, 0, Buffer.Length, SocketFlags.None);
 
             var message = Encoding.UTF8.GetString(Buffer, 0, numberOfBytesReceived);
@@ -50,8 +49,9 @@ public class Server(string path)
     private static void SendEncryptedMessage(Socket socket, string message)
     {
         Console.WriteLine("Sending message to server: " + message);
-        var split = message.Split("|");
-        var cipherText = ShiftCipher(split[0], int.Parse(split[1]));
+
+        var split = message.Split(Delimiter);
+        var cipherText = ShiftCipher(split[Word], int.Parse(split[Shift]));
 
         socket.Send(Encoding.UTF8.GetBytes(cipherText));
     }
