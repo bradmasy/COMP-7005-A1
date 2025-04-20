@@ -1,7 +1,8 @@
 using System.Net.Sockets;
 using System.Text;
+using static Client.Constants;
 
-namespace Client.Client;
+namespace Client;
 
 public class Client(string path)
 {
@@ -11,7 +12,6 @@ public class Client(string path)
     public async Task Connect()
     {
         var endPoint = new UnixDomainSocketEndPoint(path);
-
         await Socket.ConnectAsync(endPoint);
     }
 
@@ -28,24 +28,39 @@ public class Client(string path)
         var buffer = new byte[ByteArraySize];
         var numberOfBytesReceived = await Socket.ReceiveAsync(buffer, SocketFlags.None);
 
-        if (numberOfBytesReceived <= 0) return string.Empty;
+        if (numberOfBytesReceived <= NoBytes) return string.Empty;
         var receivedMessage = Encoding.UTF8.GetString(buffer, 0, numberOfBytesReceived);
         return receivedMessage;
     }
 
     public string Decrypt(string message, int shift)
     {
-        var inputArray = message.ToCharArray();
         var builder = new StringBuilder();
 
-        foreach (var letter in inputArray)
+        foreach (var letter in message)
         {
-            var shiftedLetter = (char)(Convert.ToInt32(letter) - shift) % 26;
-            builder.Append(shiftedLetter);
+            if (char.IsLetter(letter))
+            {
+                var offset = char.IsUpper(letter) ? UpperAscii : LowerAscii;
+                var decrypted = (char)(((letter - offset - shift) % AsciiShift + AsciiShift) % AsciiShift + offset);
+                builder.Append(decrypted);
+            }
+            else if (char.IsDigit(letter))
+            {
+                var digit = letter - Zero;
+                var decryptedDigit = (digit - shift % NumericShift + NumericShift) % NumericShift;
+                var decrypted = (char)(decryptedDigit + Zero);
+                builder.Append(decrypted);
+            }
+            else
+            {
+                builder.Append(letter);
+            }
         }
 
         return builder.ToString();
     }
+
 
     public void Teardown()
     {
@@ -54,6 +69,6 @@ public class Client(string path)
 
     public void DisplayMessage(string message)
     {
-        
+        Console.WriteLine($"The Decrypted Message is: \"{message}\"");
     }
 }

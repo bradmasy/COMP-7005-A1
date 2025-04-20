@@ -1,4 +1,4 @@
-﻿using static Server.Constants.Constants;
+﻿using static Server.Constants;
 
 namespace Server;
 
@@ -21,7 +21,7 @@ class Program
             }
 
             var path = args[SocketPath];
-            var server = new Server.Server(path);
+            var server = new Server(path);
             
             await server.StartServer();
             

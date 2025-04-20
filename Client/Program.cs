@@ -1,5 +1,4 @@
-﻿using Client.Validation;
-using static Client.Constants.Constants;
+﻿using static Client.Constants;
 
 namespace Client;
 
@@ -9,24 +8,22 @@ class Program
     {
         try
         {
-            
             Validator.ValidateArguments(args);
 
+            var shift = Validator.ValidateShiftArgument(args[Shift]);
             var path = args[SocketPath];
             var word = args[Word];
-            var success = int.TryParse(args[Shift], out var shift);
 
-            if (!success) throw new Exception("Error: Please provide a valid integer value to shift word.");
-            
-            var client = new Client.Client(path);
+            var client = new Client(path);
 
             await client.Connect();
             await client.SendCipher(word, shift);
-            
+
             var response = await client.ReceiveData();
-            Console.WriteLine($"Cipher received:{response}");
             var decrypted = client.Decrypt(response, shift);
-            Console.WriteLine($"Decrypted:{decrypted}");
+
+            client.DisplayMessage(decrypted);
+
             client.Teardown();
         }
         catch (Exception ex)

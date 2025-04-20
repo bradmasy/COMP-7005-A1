@@ -1,6 +1,6 @@
-using static  Client.Constants.Constants;
+using static Client.Constants;
 
-namespace Client.Validation;
+namespace Client;
 
 public static class Validator
 {
@@ -21,5 +21,14 @@ public static class Validator
             throw new Exception(
                 "Error: You must provide exactly 3 arguments. Arg 1 for the path. Arg 2 for the word, and Arg 3 for the cipher shift amount.");
         }
+    }
+
+
+    public static int ValidateShiftArgument(string shiftArg)
+    {
+        var isInt = int.TryParse(shiftArg, out var shift);
+
+        if (!isInt) throw new Exception("Error: Please provide a valid integer value to shift word.");
+        return shift;
     }
 }

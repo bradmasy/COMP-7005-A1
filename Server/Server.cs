@@ -1,8 +1,8 @@
 using System.Net.Sockets;
 using System.Text;
-using static Server.Constants.Constants;
+using static Server.Constants;
 
-namespace Server.Server;
+namespace Server;
 
 public class Server(string path)
 {
@@ -44,7 +44,7 @@ public class Server(string path)
             try
             {
                 var message = Read(clientConnection);
-
+                Console.WriteLine(message);
                 SendEncryptedMessage(clientConnection, message);
                 Flush();
             }
@@ -105,17 +105,32 @@ public class Server(string path)
 
     private static string ShiftCipher(string input, int shift)
     {
-        var inputArray = input.ToCharArray();
         var builder = new StringBuilder();
 
-        foreach (var letter in inputArray)
+        foreach (var letter in input)
         {
-            var shiftedLetter = (char)(Convert.ToInt32(letter) + shift) % 26;
-            builder.Append(shiftedLetter);
+            if (char.IsLetter(letter))
+            {
+                var offset = char.IsUpper(letter) ? UpperAscii : LowerAscii;
+                var encrypted = (char)(((letter - offset + shift) % AsciiShift + AsciiShift) % AsciiShift + offset);
+                builder.Append(encrypted);
+            }
+            else if (char.IsDigit(letter))
+            {
+                var digit = letter - Zero;
+                var encryptedDigit = (digit + shift % NumericShift + NumericShift) % NumericShift;
+                var encrypted = (char)(encryptedDigit + Zero);
+                builder.Append(encrypted);
+            }
+            else
+            {
+                builder.Append(letter);
+            }
         }
 
         return builder.ToString();
     }
+
 
     private static byte[] CreateErrorMessage(string message)
     {
