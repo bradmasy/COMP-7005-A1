@@ -1,5 +1,4 @@
 ﻿using Client.Validation;
-using Client.Client;
 using static Client.Constants.Constants;
 
 namespace Client;
@@ -10,6 +9,7 @@ class Program
     {
         try
         {
+            
             Validator.ValidateArguments(args);
 
             var path = args[SocketPath];
@@ -21,8 +21,8 @@ class Program
             var client = new Client.Client(path);
 
             await client.Connect();
-
             await client.SendCipher(word, shift);
+            
             var response = await client.ReceiveData();
             Console.WriteLine($"Cipher received:{response}");
             var decrypted = client.Decrypt(response, shift);

@@ -1,13 +1,35 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using static Server.Constants.Constants;
 
+namespace Server;
+
+/**
+ * Main program for the server.
+ */
 class Program
 {
+    /**
+     * The Entry point for the program
+     * path should be "/tmp/foo.sock"
+     */
     static async Task Main(string[] args)
     {
-        var server = new Server.Server.Server("/tmp/foo.sock");
+        try
+        {
+            if (args.Length == NoArgs)
+            {
+                throw new Exception("Please provide a path to the UNIX domain socket.");
+            }
 
-        using var socket = server.Socket;
-
-        await server.StartServer();
+            var path = args[SocketPath];
+            var server = new Server.Server(path);
+            
+            await server.StartServer();
+            
+            server.TearDown();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
     }
 }

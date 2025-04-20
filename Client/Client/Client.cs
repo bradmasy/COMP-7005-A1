@@ -40,7 +40,7 @@ public class Client(string path)
 
         foreach (var letter in inputArray)
         {
-            var shiftedLetter = (char)(Convert.ToInt32(letter) - shift);
+            var shiftedLetter = (char)(Convert.ToInt32(letter) - shift) % 26;
             builder.Append(shiftedLetter);
         }
 
@@ -50,5 +50,10 @@ public class Client(string path)
     public void Teardown()
     {
         Socket.Close();
+    }
+
+    public void DisplayMessage(string message)
+    {
+        
     }
 }
